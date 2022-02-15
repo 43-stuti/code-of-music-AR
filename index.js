@@ -27,7 +27,7 @@ async function activateXR() {
     //create canvas 
     //add the canvas as texture 
     //attach p5 text to the canvas 
-    const cube = new THREE.Mesh(new THREE.BoxBufferGeometry(0.5, 0.5, 0.5), materials);
+    const cube = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials);
     cube.position.set(1, 1, 1);
     cube.name = "HAHA"
     scene.add(cube);
