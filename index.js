@@ -1,6 +1,7 @@
 
 let pcanvas;
 let play1 = 0;
+let x =0;
 async function activateXR() {
     // Add a canvas element and initialize a WebGL context that is compatible with WebXR.
     const canvas = document.createElement("canvas");
@@ -27,9 +28,8 @@ async function activateXR() {
     //create canvas 
     //add the canvas as texture 
     //attach p5 text to the canvas 
-    const cube = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials);
-    cube.position.set(1, 1, 1);
-    cube.name = "HAHA"
+    const cube = new THREE.Mesh(new THREE.BoxBufferGeometry(3,1.5, 0.1), materials);
+    cube.position.set(0, 0, -3);
     scene.add(cube);
 
     // Set up the WebGLRenderer, which handles rendering to the session's base layer.
@@ -65,7 +65,8 @@ async function activateXR() {
         }
         // Queue up the next draw request.
         session.requestAnimationFrame(onXRFrame);
-      
+        texture.needsUpdate = true;
+
         // Bind the graphics framebuffer to the baseLayer's framebuffer
         gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer)
       
@@ -78,7 +79,6 @@ async function activateXR() {
           
           const viewport = session.renderState.baseLayer.getViewport(view);
           renderer.setSize(viewport.width, viewport.height)
-          console.log('VV',view)
 
           // Use the view's transform matrix and projection matrix to configure the THREE.camera.
           camera.matrix.fromArray(view.transform.matrix)
@@ -93,23 +93,96 @@ async function activateXR() {
       session.requestAnimationFrame(onXRFrame);
   }
 
+//p5 stuff
+const colorPrimary = '#ff3100';
+const colorSecondary = '#176beb';
+const assetsUrl = './assets';
+
+let midiData, audioDuration;
+
+let showTimeGrid = true;
+let showNoteGrid = false;
+Midi.fromUrl(`${assetsUrl}/kill_bill.mid`).then(
+  (data) => {
+    midiData = data;
+
+    const { endOfTrackTicks } = midiData.tracks[0];
+
+    /* Duration of audio sample */
+    const sPerTick = 60000 / (111.96 * 96);
+    audioDuration = (endOfTrackTicks * sPerTick) / 1000;
+
+    Tone.Transport.loop = true;
+    Tone.Transport.loopEnd = audioDuration;
+
+    const audio = new Tone.Player(`${assetsUrl}/whistle_2.mp3`);
+    audio.toDestination();
+    audio.sync().start(0);
+  }
+);
 function setup() {
   let can = createCanvas(400, 400);
   pcanvas = can.elt;
-  console.log("pcan",pcanvas);
   background(255, 204, 100);
   
 }
 function draw() {
-  background(255, 204, 100);
-  ellipse(50,50,80,80);
-  if(play1 == 1) {
-    console.log('START PLAY');
-    startPlay();
-  }
+  if (!midiData) return;
+
+    const { endOfTrackTicks, notes } = midiData.tracks[0];
+    const noteHeight = 30;
+    const minNote = 84;
+    const numLines = 6;
+
+    background(255);
+    stroke(0, 50);
+
+    if (showTimeGrid) {
+      for (let i = 0; i < width; i += width / numLines) {
+        line(i, 0, i, height);
+      }
+    }
+
+    if (showNoteGrid) {
+      for (let i = 0; i < height; i += noteHeight) {
+        line(0, i, width, i);
+      }
+    }
+    const currentTime = Tone.Transport.seconds / audioDuration;
+
+    notes.forEach(({ ticks, time, durationTicks, midi }, i) => {
+      /* Don't show last note which is used to set the end time */
+      if (i === notes.length - 1) return;
+
+      const x = map(ticks, 0, endOfTrackTicks, 0, width);
+      const y = height - (midi - minNote) * noteHeight;
+      const w = map(durationTicks, 0, endOfTrackTicks, 0, width);
+
+      var c = color(colorPrimary);
+
+      if (currentTime > ticks / endOfTrackTicks) {
+        c.setAlpha(255);
+      } else {
+        c.setAlpha(50);
+      }
+
+      fill(c);
+      noStroke();
+      rect(x, y, w, noteHeight);
+    });
+    const overlayC = color(colorSecondary);
+    const rectWidth = map(currentTime, 0, 1, 0, width);
+
+    overlayC.setAlpha(20);
+    fill(overlayC);
+    rect(0, 0, rectWidth, height);
+    overlayC.setAlpha(100);
+    fill(overlayC);
+    rect(rectWidth - 2, 0, 4, height);
 }
 
 function startPlay() {
+  
   play1 = 2;
   const synth = new Tone.Synth().toDestination();
   const now = Tone.now()
