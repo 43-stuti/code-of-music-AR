@@ -24,6 +24,15 @@ async function activateXR() {
     new THREE.MeshBasicMaterial({ map: texture})
     ];
 
+    const m2 = [
+      new THREE.MeshBasicMaterial({color: 0xff0000}),
+  new THREE.MeshBasicMaterial({color: 0x0000ff}),
+  new THREE.MeshBasicMaterial({color: 0x00ff00}),
+  new THREE.MeshBasicMaterial({color: 0xff00ff}),
+  new THREE.MeshBasicMaterial({color: 0x00ffff}),
+  new THREE.MeshBasicMaterial({color: 0xffff00})
+      ];
+
     // Create the cube and add it to the demo scene.
     //create canvas 
     //add the canvas as texture 
@@ -32,6 +41,10 @@ async function activateXR() {
     cube.position.set(0, -1, -3);
     scene.add(cube);
 
+    //test button 
+    const play = new THREE.Mesh(new THREE.BoxBufferGeometry(1,0.2, 0.1), m2);
+    play.position.set(-1, 0.5, -3);
+    scene.add(play);
     // Set up the WebGLRenderer, which handles rendering to the session's base layer.
     const renderer = new THREE.WebGLRenderer({
         alpha: true,
@@ -48,21 +61,23 @@ async function activateXR() {
     camera.matrixAutoUpdate = false;
 
     // Initialize a WebXR session using "immersive-ar".
-    const session = await navigator.xr.requestSession("immersive-ar");
+    const session = await navigator.xr.requestSession("immersive-ar",{requiredFeatures: ['hit-test']});
     session.updateRenderState({
     baseLayer: new XRWebGLLayer(session, gl)
 
     
     });
-
+    session.addEventListener("select", (event) => {
+      console.log('TAP TAP')
+    });
     // A 'local' reference space has a native origin that is located
     // near the viewer's position at the time the session was created.
     const referenceSpace = await session.requestReferenceSpace('local');
-
+    const viewerSpace = await session.requestReferenceSpace('viewer');
+    // Perform hit testing using the viewer as origin.
+    const hitTestSource = await session.requestHitTestSource({ space: viewerSpace }); 
     const onXRFrame = (time, frame) => {
-        if(play1 == 0) {
-          play1 = 1
-        }
+       
         // Queue up the next draw request.
         session.requestAnimationFrame(onXRFrame);
         texture.needsUpdate = true;
