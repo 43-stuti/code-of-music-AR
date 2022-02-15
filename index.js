@@ -29,7 +29,7 @@ async function activateXR() {
     //add the canvas as texture 
     //attach p5 text to the canvas 
     const cube = new THREE.Mesh(new THREE.BoxBufferGeometry(3,1.5, 0.1), materials);
-    cube.position.set(0, 0, -3);
+    cube.position.set(0, -1, -3);
     scene.add(cube);
 
     // Set up the WebGLRenderer, which handles rendering to the session's base layer.
@@ -123,7 +123,7 @@ Midi.fromUrl(`${assetsUrl}/kill_bill.mid`).then(
 function setup() {
   let can = createCanvas(400, 400);
   pcanvas = can.elt;
-  background(255, 204, 100);
+  //background(255, 204, 100);
   
 }
 function draw() {
@@ -134,7 +134,7 @@ function draw() {
     const minNote = 84;
     const numLines = 6;
 
-    background(255);
+    background(0,0,0,0.2);
     stroke(0, 50);
 
     if (showTimeGrid) {
