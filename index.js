@@ -4,6 +4,7 @@ let play1 = 0;
 let x =0;
 async function activateXR() {
     // Add a canvas element and initialize a WebGL context that is compatible with WebXR.
+    Tone.Transport.start();
     const canvas = document.createElement("canvas");
     document.body.appendChild(canvas);
     const gl = canvas.getContext("webgl", {xrCompatible: true});
@@ -24,14 +25,8 @@ async function activateXR() {
     new THREE.MeshBasicMaterial({ map: texture})
     ];
 
-    const m2 = [
-      new THREE.MeshBasicMaterial({color: 0xff0000}),
-  new THREE.MeshBasicMaterial({color: 0x0000ff}),
-  new THREE.MeshBasicMaterial({color: 0x00ff00}),
-  new THREE.MeshBasicMaterial({color: 0xff00ff}),
-  new THREE.MeshBasicMaterial({color: 0x00ffff}),
-  new THREE.MeshBasicMaterial({color: 0xffff00})
-      ];
+    const m2 = new THREE.MeshBasicMaterial({color: 0x176beb})
+   
 
     // Create the cube and add it to the demo scene.
     //create canvas 
@@ -42,8 +37,8 @@ async function activateXR() {
     scene.add(cube);
 
     //test button 
-    const play = new THREE.Mesh(new THREE.BoxBufferGeometry(1,0.2, 0.1), m2);
-    play.position.set(-1, 0.5, -3);
+    const play = new THREE.Mesh(new THREE.SphereGeometry(0.25,15, 15), m2);
+    play.position.set(-0.5, -2.3, -3);
     scene.add(play);
     // Set up the WebGLRenderer, which handles rendering to the session's base layer.
     const renderer = new THREE.WebGLRenderer({
@@ -117,6 +112,7 @@ let midiData, audioDuration;
 
 let showTimeGrid = true;
 let showNoteGrid = false;
+let start = 0;
 Midi.fromUrl(`${assetsUrl}/kill_bill.mid`).then(
   (data) => {
     midiData = data;
@@ -140,6 +136,7 @@ function setup() {
   pcanvas = can.elt;
   //background(255, 204, 100);
   
+  
 }
 function draw() {
   if (!midiData) return;
@@ -148,7 +145,7 @@ function draw() {
     const noteHeight = 30;
     const minNote = 84;
     const numLines = 6;
-
+    
     background(0,0,0,0.2);
     stroke(0, 50);
 
